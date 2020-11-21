@@ -1,263 +1,82 @@
-<p align="center"><a href="https://github.com/librenms/docker" target="_blank"><img height="128"src="https://raw.githubusercontent.com/librenms/docker/master/.res/docker-librenms.jpg"></a></p>
+<p align="center"><a href="https://github.com/librenms/docker" target="_blank"><img height="128" src="https://raw.githubusercontent.com/librenms/docker/master/.github/docker-librenms.jpg"></a></p>
 
 <p align="center">
-  <a href="https://hub.docker.com/r/librenms/librenms/"><img src="https://img.shields.io/badge/dynamic/json.svg?label=version&query=$.results[1].name&url=https://hub.docker.com/v2/repositories/librenms/librenms/tags&style=flat-square" alt="Latest Version"></a>
-  <a href="https://travis-ci.com/librenms/docker"><img src="https://img.shields.io/travis/com/librenms/docker/master.svg?style=flat-square" alt="Build Status"></a>
-  <a href="https://hub.docker.com/r/librenms/librenms/"><img src="https://img.shields.io/docker/stars/librenms/librenms.svg?style=flat-square" alt="Docker Stars"></a>
-  <a href="https://hub.docker.com/r/librenms/librenms/"><img src="https://img.shields.io/docker/pulls/librenms/librenms.svg?style=flat-square" alt="Docker Pulls"></a>
-  <a href="https://quay.io/repository/librenms/librenms"><img src="https://quay.io/repository/librenms/librenms/status?style=flat-square" alt="Docker Repository on Quay"></a>
-  <a href="https://www.codacy.com/app/librenms/docker"><img src="https://img.shields.io/codacy/grade/42f89bb80153441da8a02a71fb829080.svg?style=flat-square" alt="Code Quality"></a>
-  <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=962TPYQKMQ2UE"><img src="https://img.shields.io/badge/donate-paypal-7057ff.svg?style=flat-square" alt="Donate Paypal"></a>
+  <a href="https://hub.docker.com/r/librenms/librenms/tags?page=1&ordering=last_updated"><img src="https://img.shields.io/github/v/tag/librenms/docker?label=version&style=flat-square" alt="Latest Version"></a>
+  <a href="https://github.com/librenms/docker/actions?workflow=build"><img src="https://img.shields.io/github/workflow/status/librenms/docker/build?label=build&logo=github&style=flat-square" alt="Build Status"></a>
+  <a href="https://hub.docker.com/r/librenms/librenms/"><img src="https://img.shields.io/docker/stars/librenms/librenms.svg?style=flat-square&logo=docker" alt="Docker Stars"></a>
+  <a href="https://hub.docker.com/r/librenms/librenms/"><img src="https://img.shields.io/docker/pulls/librenms/librenms.svg?style=flat-square&logo=docker" alt="Docker Pulls"></a>
+  <br /><a href="https://github.com/sponsors/crazy-max"><img src="https://img.shields.io/badge/sponsor-crazy--max-181717.svg?logo=github&style=flat-square" alt="Become a sponsor"></a>
+  <a href="https://www.paypal.me/crazyws"><img src="https://img.shields.io/badge/donate-paypal-00457c.svg?logo=paypal&style=flat-square" alt="Donate Paypal"></a>
 </p>
 
 ## About
 
-🐳 [LibreNMS](https://www.librenms.org/) Docker image based on Alpine Linux and Nginx.<br />
-It's a fork of [CrazyMax's LibreNMS Docker image repository](https://github.com/crazy-max/docker-librenms). If you are interested, [check out](https://hub.docker.com/r/crazymax/) his other 🐳 Docker images!
+[LibreNMS](https://www.librenms.org/) Docker image based on Alpine Linux and Nginx.<br />
+If you are interested, [check out](https://hub.docker.com/r/crazymax/) my other Docker images!
+
+💡 Want to be notified of new releases? Check out 🔔 [Diun (Docker Image Update Notifier)](https://github.com/crazy-max/diun) project!
+
+## Demo
+
+[![Try in PWD](https://raw.githubusercontent.com/play-with-docker/stacks/master/assets/images/button.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/librenms/docker/master/examples/pwd/librenms.yml)
 
 ## Features
 
-### Included
-
-* Alpine Linux 3.10, Nginx, PHP 7.3
-* Cron tasks as a ["sidecar" container](#crons)
-* Syslog-ng support through a ["sidecar" container](#syslog-ng)
-* Ability to configure [distributed polling](https://docs.librenms.org/#Extensions/Distributed-Poller/#distributed-poller)
+* Run as non-root user
+* Multi-platform image
+* [Dispatcher service](doc/docker/environment-variables.md#dispatcher-service) as "sidecar" container
+* Syslog-ng support through a ["sidecar" container](doc/docker/environment-variables.md#syslog-ng)
+* Built-in LibreNMS [Weathermap plugin](https://docs.librenms.org/Extensions/Weathermap/)
 * Ability to add custom Monitoring plugins (Nagios)
+* Ability to add custom alert templates
 * OPCache enabled to store precompiled script bytecode in shared memory
-
-### From docker-compose
-
-* [Traefik](https://github.com/containous/traefik-library-image) as reverse proxy and creation/renewal of Let's Encrypt certificates
+* [s6-overlay](https://github.com/just-containers/s6-overlay/) as process supervisor
+* [Traefik](https://github.com/containous/traefik-library-image) as reverse proxy and creation/renewal of Let's Encrypt certificates (see [this template](examples/traefik))
 * [Memcached](https://github.com/docker-library/memcached) image ready to use for better scalability
-* [RRDcached](https://github.com/crazy-max/docker-rrdcached) image ready to use for better scalability
-* [Postfix SMTP relay](https://github.com/juanluisbaptiste/docker-postfix) image to send emails
+* [RRDcached](https://github.com/crazy-max/docker-rrdcached) image ready to use for data caching and graphs
+* [msmtpd SMTP relay](https://github.com/crazy-max/docker-msmtpd) image to send emails
 * [MariaDB](https://github.com/docker-library/mariadb) image as database instance
-* Cron jobs as a ["sidecar" container](#cron)
-* Syslog-ng support through a ["sidecar" container](#syslog-ng)
 
-## Docker
+## Multi-platform image
 
-### Environment variables
+Following platforms for this image are available:
 
-#### General
-
-* `TZ` : The timezone assigned to the container (default `UTC`)
-* `PUID` : LibreNMS user id (default `1000`)
-* `PGID`: LibreNMS group id (default `1000`)
-* `MEMORY_LIMIT` : PHP memory limit (default `256M`)
-* `UPLOAD_MAX_SIZE` : Upload max size (default `16M`)
-* `OPCACHE_MEM_SIZE` : PHP OpCache memory consumption (default `128`)
-* `REAL_IP_FROM` : Trusted addresses that are known to send correct replacement addresses (default `0.0.0.0/32`)
-* `REAL_IP_HEADER` : Request header field whose value will be used to replace the client address (default `X-Forwarded-For`)
-* `LOG_IP_VAR` : Use another variable to retrieve the remote IP address for access [log_format](http://nginx.org/en/docs/http/ngx_http_log_module.html#log_format) on Nginx. (default `remote_addr`)
-
-#### (Distributed) Poller
-
-* `LIBRENMS_POLLER_THREADS` : Threads that `poller-wrapper.py` runs (default `16`)
-* `LIBRENMS_POLLER_INTERVAL` : Interval in minutes at which `poller-wrapper.py` runs (defaults to `5`) [docs](https://docs.librenms.org/#Support/1-Minute-Polling/)
-* `LIBRENMS_DISTRIBUTED_POLLER_ENABLE` : Enable distributed poller functionality
-* `LIBRENMS_DISTRIBUTED_POLLER_NAME` : Optional name of poller (defaults to hostname)
-* `LIBRENMS_DISTRIBUTED_POLLER_GROUP` : By default, all hosts are shared and have the poller_group = 0. To pin a device to a poller, set it to a value greater than 0 and set the same value here. One can also specify a comma separated string of poller groups. The poller will then poll devices from any of the groups listed. [docs](https://docs.librenms.org/#Extensions/Distributed-Poller/#distributed-poller)
-* `LIBRENMS_DISTRIBUTED_POLLER_MEMCACHED_HOST` : Memcached server for poller synchronization (Defaults to `$MEMCACHED_HOST`)
-* `LIBRENMS_DISTRIBUTED_POLLER_MEMCACHED_PORT` : Port of memcached server (Defaults to `$MEMCACHED_PORT`)
-
-#### Cron
-
-> :warning: Only used if you enabled and run a [sidecar cron container](#crons)
-
-* `SIDECAR_CRON` : Set to `1` to enable sidecar cron mode for this container (default `0`)
-* `LIBRENMS_CRON_DISCOVERY_ENABLE` : Enable LibreNMS discovery for this container cronjobs (default `true`)
-* `LIBRENMS_CRON_DAILY_ENABLE` : Enable LibreNMS daily script for this container cronjobs (default `true`)
-* `LIBRENMS_CRON_ALERTS_ENABLE` : Enable LibreNMS alerts generation for this container cronjobs (default `true`)
-* `LIBRENMS_CRON_BILLING_ENABLE` : Enable LibreNMS billing polling for this container cronjobs (default `true`)
-* `LIBRENMS_CRON_BILLING_CALCULATE_ENABLE` : Enable LibreNMS billing for this container cronjobs (default `true`)
-* `LIBRENMS_CRON_CHECK_SERVICES_ENABLE` : Enable LibreNMS service checks for this container cronjobs (default `true`)
-* `LIBRENMS_CRON_POLLER_ENABLE` : Enable LibreNMS polling for this container cronjobs (default `true`)
-
-#### Syslog-ng
-
-> :warning: Only used if you enabled and run a [sidecar syslog-ng container](#syslog-ng-1)
-
-* `SIDECAR_SYSLOGNG` : Set to `1` to enable sidecar syslog-ng mode for this container (default `0`)
-
-#### Database
-
-* `DB_HOST` : MySQL database hostname / IP address
-* `DB_PORT` : MySQL database port (default `3306`)
-* `DB_NAME` : MySQL database name (default `librenms`)
-* `DB_USER` : MySQL user (default `librenms`)
-* `DB_PASSWORD` : MySQL password (default `librenms`)
-* `DB_TIMEOUT` : Time in seconds after which we stop trying to reach the MySQL server (useful for clusters, default `30`)
-
-#### Misc
-
-* `LIBRENMS_SNMP_COMMUNITY` : This container's SNMP v2c community string (default `librenmsdocker`)
-* `MEMCACHED_HOST` : Hostname / IP address of a Memcached server
-* `MEMCACHED_PORT` : Port of the Memcached server (default `11211`)
-* `RRDCACHED_HOST` : Hostname / IP address of a RRDcached server
-* `RRDCACHED_PORT` : Port of the RRDcached server (default `42217`)
-
-### Volumes
-
-* `/data` : Contains configuration, rrd database, logs, additional Monitoring plugins, additional syslog-ng config files
-
-### Ports
-
-* `80` : HTTP port
-* `514 514/udp` : Syslog ports (Only used if you enabled and run a [sidecar syslog-ng container](#syslog-ng-1))
-
-## Use this image
-
-### Docker Compose
-
-Docker compose is the recommended way to run this image. Copy the content of folder [examples/compose](examples/compose) in `/var/librenms/` on your host for example. Edit the compose and env files with your preferences and run the following commands :
-
-```bash
-touch acme.json
-chmod 600 acme.json
-docker-compose up -d
-docker-compose logs -f
+```
+$ docker run --rm mplatform/mquery librenms/librenms:latest
+Image: librenms/librenms:latest
+ * Manifest List: Yes
+ * Supported platforms:
+   - linux/amd64
+   - linux/arm/v6
+   - linux/arm/v7
+   - linux/arm64
+   - linux/386
+   - linux/ppc64le
+   - linux/s390x
 ```
 
-### Command line
+## Documentation
 
-You can also use the following minimal command :
+* Docker
+  * [Environment variables](doc/docker/environment-variables.md)
+  * [Volumes](doc/docker/volumes.md)
+  * [Ports](doc/docker/ports.md)
+* [Usage](doc/usage.md)
+* Notes
+  * [Edit configuration](doc/notes/edit-config.md)
+  * [LNMS command](doc/notes/lnms-command.md)
+  * [Validate](doc/notes/validate.md)
+  * [Dispatcher service](doc/notes/dispatcher-service.md)
+  * [Syslog-ng](doc/notes/syslog-ng.md)
+  * [Additional Monitoring plugins (Nagios)](doc/notes/additional-monitoring-plugins.md)
+  * [Custom alert templates](doc/notes/alert-templates.md)
+* [Upgrade](doc/upgrade.md)
 
-```bash
-docker run -d -p 80:80 --name librenms \
-  -v $(pwd)/data:/data \
-  -e "DB_HOST=db" \
-  librenms/librenms:latest
-```
+## How can I help?
 
-> `-e "DB_HOST=db"`<br />
-> :warning: `db` must be a running MySQL instance
+All kinds of contributions are welcome :raised_hands:! The most basic way to show your support is to star :star2: the project, or to raise issues :speech_balloon: You can also support this project by [**becoming a sponsor on GitHub**](https://github.com/sponsors/crazy-max) :clap: or by making a [Paypal donation](https://www.paypal.me/crazyws) to ensure this journey continues indefinitely! :rocket:
 
-## Notes
-
-### Edit configuration
-
-You can edit configuration of LibreNMS by placing `*.php` files inside `/data/config` folder. Let's say you want to edit the [WebUI config](https://docs.librenms.org/#Support/Configuration/#webui-settings). Create a file called for example `/data/config/webui.php` with this content :
-
-```php
-<?php
-$config['page_refresh'] = "300";
-$config['webui']['default_dashboard_id'] = 0;
-```
-
-This configuration will be included in LibreNMS and will override the default values.
-
-### Add user
-
-On first launch, an initial administrator user will be created :
-
-| Login      | Password   |
-|------------|------------|
-| `librenms` | `librenms` |
-
-You can create an other user using the commande line :
-
-```text
-$ docker-compose exec --user librenms librenms php adduser.php <name> <pass> 10 <email>
-```
-
-> :warning: Substitute your desired username `<name>`, password `<pass>` and email address `<email>`
-
-### Validate
-
-If you want to validate your installation from the CLI, type the following command :
-
-```text
-$ docker-compose exec --user librenms librenms php validate.php
-====================================
-Component | Version
---------- | -------
-LibreNMS  | 1.41
-DB Schema | 253
-PHP       | 7.2.7
-MySQL     | 10.2.16-MariaDB-10.2.16+maria~jessie
-RRDTool   | 1.7.0
-SNMP      | NET-SNMP 5.7.3
-====================================
-
-[OK]    Composer Version: 1.6.5
-[OK]    Dependencies up-to-date.
-[OK]    Database connection successful
-[OK]    Database schema correct
-[WARN]  You have not added any devices yet.
-        [FIX] You can add a device in the webui or with ./addhost.php
-[WARN]  Your install is over 24 hours out of date, last update: Sat, 30 Jun 2018 21:37:37 +0000
-        [FIX] Make sure your daily.sh cron is running and run ./daily.sh by hand to see if there are any errors.
-[WARN]  Your local git branch is not master, this will prevent automatic updates.
-        [FIX] You can switch back to master with git checkout master
-```
-
-### Update database
-
-To update the database manually, type the following command :
-
-```bash
-$ docker-compose exec --user librenms librenms php build-base.php
-```
-
-### Crons
-
-If you want to enable the cronjob, you have to run a "sidecar" container (see cron service in [docker-compose.yml](examples/compose/docker-compose.yml) example) or run a simple container like this :
-
-```bash
-docker run -d --name librenms_cron \
-  --env-file $(pwd)/librenms.env \
-  -e SIDECAR_CRON=1 \
-  -v librenms:/data \
-  librenms/librenms:latest
-```
-
-> `-v librenms:/data`<br />
-> :warning: `librenms` must be a valid volume already attached to a LibreNMS container
-
-### Syslog-ng
-
-If you want to enable syslog-ng, you have to run a "sidecar" container (see syslog-ng service in [docker-compose.yml](examples/compose/docker-compose.yml) example) or run a simple container like this :
-
-```bash
-docker run -d --name librenms_syslog \
-  --env-file $(pwd)/librenms.env \
-  -e SIDECAR_SYSLOGNG=1 \
-  -p 514 -p 514/udp \
-  -v librenms:/data \
-  librenms/librenms:latest
-```
-
-You have to create a configuration file to enable syslog in LibreNMS too. Create a file called for example `/data/config/syslog.php` with this content :
-
-```php
-<?php
-$config['enable_syslog'] = 1;
-```
-
-## Additional Monitoring plugins (Nagios)
-
-You can add a custom Monitoring (Nagios) plugin in `/data/monitoring-plugins/`.
-
-> :warning: Container has to be restarted to propagate changes
-
-## Upgrade
-
-To upgrade to the latest version of LibreNMS, pull the newer image and launch the container. LibreNMS will upgrade automatically :
-
-```bash
-docker-compose pull
-docker-compose up -d
-```
-
-## How can I help ?
-
-All kinds of contributions are welcome :raised_hands:!<br />
-The most basic way to show your support is to star :star2: the project, or to raise issues :speech_balloon:<br />
-But we're not gonna lie to each other, I'd rather you buy me a beer or two :beers:!
-
-[![Paypal](.res/paypal.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=962TPYQKMQ2UE)
+Thanks again for your support, it is much appreciated! :pray:
 
 ## License
 

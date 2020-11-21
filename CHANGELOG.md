@@ -1,5 +1,228 @@
 # Changelog
 
+## 1.69-RC2 (2020/11/04)
+
+* Do not set default value for `RRDCACHED_SERVER`
+
+## 1.69-RC1 (2020/11/03)
+
+* LibreNMS 1.69
+* Update to Traefik v2
+* Update PWD example (#135)
+* Allow to clear env for FPM workers
+* Use Docker meta action to handle tags and labels
+* Replace `RRDCACHED_HOST` and `RRDCACHED_PORT` with `RRDCACHED_SERVER` env var
+
+## 1.68-RC1 (2020/09/30)
+
+* LibreNMS 1.68
+
+## 1.67-RC2 (2020/09/04)
+
+* Seed through artisan (#122)
+
+## 1.67-RC1 (2020/09/03)
+
+* LibreNMS 1.67
+* Now based on [Alpine Linux 3.12 with s6 overlay](https://github.com/crazy-max/docker-alpine-s6/)
+* Missing migration seed flag (#122)
+
+## 1.66-RC2 (2020/08/28)
+
+* Fix DB connection for dispatcher service (#108 #118 #119)
+* Run maintenance task through a dedicated process (#105)
+* Add `DISPATCHER_ARGS` env var
+
+## 1.66-RC1 (2020/07/30)
+
+* LibreNMS 1.66
+
+## 1.65.1-RC2 (2020/07/10)
+
+* Add `LIBRENMS_BASE_URL` env var (#95 #99 #100)
+
+## 1.65.1-RC1 (2020/07/10)
+
+* LibreNMS 1.65.1
+
+## 1.65-RC1 (2020/07/03)
+
+* LibreNMS 1.65
+* Remove `LIBRENMS_DISTRIBUTED_POLLER_*` env vars (now handle through WebUI)
+* Check database migration completed
+* Remove `LIBRENMS_SERVICE_*` env vars (now handle through WebUI)
+* Check `poller_cluster` table exists before running dispatcher
+* Handle Redis for dispatcher through `.env`
+* Remove deprecated sidecar cron container
+* Handle APP_KEY and NODE_ID (#91 #93)
+* Add artisan command
+* Clear cache and reload config cache
+* Set user group config
+* Alpine Linux 3.12
+
+> :warning: **UPGRADE NOTES**
+> Fill in the "Specific URL" (`base_url`) at `https://librenms.example.com/settings/system/server`
+
+## 1.64.1-RC1 (2020/06/01)
+
+* LibreNMS 1.64.1
+
+## 1.64-RC1 (2020/06/01)
+
+* LibreNMS 1.64
+* Python 2 removed (librenms/librenms#11531)
+* Multi-platform image
+* Publish edge image
+
+## 1.63-RC7 (2020/05/28)
+
+* Use recommended `lnms` command
+* Remove `--sql-mode` and bump Mariadb to 10.4
+
+## 1.63-RC6 (2020/05/24)
+
+* Bring back Git package
+
+## 1.63-RC5 (2020/05/22)
+
+* Add missing dep and perms for Weathermap plugin (#82)
+
+## 1.63-RC4 (2020/05/21)
+
+* Add LibreNMS Weathermap plugin (#81)
+* Fix syslogng version
+* Switch to [msmtpd SMTP relay](https://github.com/crazy-max/docker-msmtpd) Docker image
+
+## 1.63-RC3 (2020/05/13)
+
+* Run librenms-service as librenms user (#76)
+* Mark sidecar cron container as deprecated
+
+## 1.63-RC2 (2020/05/08)
+
+* Fix poller-wrapper
+
+## 1.63-RC1 (2020/05/08)
+
+* LibreNMS 1.63
+* Add sidecar dispatcher container (#70)
+* Add `LISTEN_IPV6` env var (#71)
+* Alpine Linux 3.11
+
+## 1.62.2-RC2 (2020/04/13)
+
+* Fix log file permissions (#66)
+* Switch to Open Container Specification labels as label-schema.org ones are deprecated
+
+## 1.62.2-RC1 (2020/04/04)
+
+* LibreNMS 1.62.2
+
+## 1.61-RC4 (2020/03/27)
+
+* Fix folder creation (#62)
+
+## 1.61-RC3 (2020/03/22)
+
+* Allow multi discovery workers through `LIBRENMS_CRON_DISCOVERY_WRAPPER_WORKERS` env var (#59)
+
+## 1.61-RC2 (2020/03/05)
+
+* Add `php7-sockets` extension (#61)
+
+## 1.61-RC1 (2020/03/02)
+
+* LibreNMS 1.61
+
+## 1.60-RC1 (2020/02/04)
+
+* LibreNMS 1.60
+
+## 1.58.1-RC6 (2020/01/23)
+
+* Move Nginx temp folders to `/tmp` (#55)
+
+## 1.58.1-RC5 (2019/12/20)
+
+* Add snmp-scan option for cron container (#53)
+
+## 1.58.1-RC4 (2019/12/06)
+
+* Fix timezone php.ini
+
+## 1.58.1-RC3 (2019/12/06)
+
+* Bring back timezone management through symlink (#49)
+
+## 1.58.1-RC2 (2019/11/29)
+
+* Fix php date timezone (#49)
+* `MEMCACHED_PORT` default port not working (#48)
+
+## 1.58.1-RC1 (2019/11/27)
+
+* LibreNMS 1.58.1
+
+## 1.58-RC1 (2019/11/25)
+
+* LibreNMS 1.58
+* Remove useless `.git` folder
+* Add `LIBRENMS_DOCKER` env (librenms/librenms#10879)
+
+## 1.57-RC2 (2019/11/19)
+
+* :warning: Run as non-root user (#6)
+* Switch to [s6-overlay](https://github.com/just-containers/s6-overlay/) as process supervisor
+* Prevent exposing Nginx and PHP version
+* :warning: Bind to unprivileged port (8000)
+* Remove php-fpm access log (already mirrored by nginx)
+
+> :warning: **UPGRADE NOTES**
+> As the Docker container now runs as a non-root user, you have to first stop the container and change permissions to `data` volume:
+> ```
+> docker-compose stop
+> chown -R ${PUID}:${PGID} data/
+> docker-compose pull
+> docker-compose up -d
+> ```
+
+## 1.57-RC1 (2019/10/30)
+
+* LibreNMS 1.57
+
+## 1.56-RC3 (2019/10/26)
+
+* Base image update
+
+## 1.56-RC2 (2019/10/25)
+
+* Fix CVE-2019-11043
+
+## 1.56-RC1 (2019/09/30)
+
+* LibreNMS 1.56
+
+## 1.55-RC2 (2019/09/14)
+
+* Review data permissions
+* Remove usermod/groupmod (Issue #38)
+
+## 1.55-RC1 (2019/09/04)
+
+* LibreNMS 1.55
+
+## 1.54-RC2 (2019/08/28)
+
+* Add python3 modules required for new [Dispatcher Service](https://docs.librenms.org/Extensions/Dispatcher-Service/) (PR #36)
+
+## 1.54-RC1 (2019/07/29)
+
+* LibreNMS 1.54
+
+## 1.53.1-RC2 (2019/07/25)
+
+* Add ipmitool location (Issue #34)
+
 ## 1.53.1-RC1 (2019/07/02)
 
 * LibreNMS 1.53.1

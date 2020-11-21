@@ -1,19 +1,10 @@
-FROM alpine:3.10
+FROM --platform=${TARGETPLATFORM:-linux/amd64} crazymax/alpine-s6:3.12
 
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN printf "I am running on ${BUILDPLATFORM:-linux/amd64}, building for ${TARGETPLATFORM:-linux/amd64}\n$(uname -a)\n"
 
-LABEL maintainer="CrazyMax" \
-  org.label-schema.build-date=$BUILD_DATE \
-  org.label-schema.name="librenms" \
-  org.label-schema.description="LibreNMS" \
-  org.label-schema.version=$VERSION \
-  org.label-schema.url="https://github.com/librenms/docker" \
-  org.label-schema.vcs-ref=$VCS_REF \
-  org.label-schema.vcs-url="https://github.com/librenms/docker" \
-  org.label-schema.vendor="LibreNMS" \
-  org.label-schema.schema-version="1.0"
+LABEL maintainer="CrazyMax"
 
 RUN apk --update --no-cache add \
     busybox-extras \
@@ -29,9 +20,9 @@ RUN apk --update --no-cache add \
     graphviz \
     imagemagick \
     ipmitool \
+    mariadb-client \
     monitoring-plugins \
     mtr \
-    mysql-client \
     net-snmp \
     net-snmp-tools \
     nginx \
@@ -42,6 +33,7 @@ RUN apk --update --no-cache add \
     php7-cli \
     php7-ctype \
     php7-curl \
+    php7-dom \
     php7-fileinfo \
     php7-fpm \
     php7-gd \
@@ -55,70 +47,85 @@ RUN apk --update --no-cache add \
     php7-openssl \
     php7-pdo \
     php7-pdo_mysql \
+    php7-pear \
     php7-phar \
     php7-posix \
     php7-session \
     php7-simplexml \
     php7-snmp \
+    php7-sockets \
     php7-tokenizer \
     php7-xml \
     php7-zip \
-    py-mysqldb \
-    python \
-    py2-pip \
     python3 \
+    py3-pip \
     rrdtool \
     runit \
     shadow \
-    supervisor \
-    syslog-ng \
+    su-exec \
+    syslog-ng=3.27.1-r0 \
     ttf-dejavu \
-    tzdata  \
     util-linux \
     whois \
-  && pip2 install --upgrade pip \
-  && pip2 install python-memcached \
+  # FIXME: Remove when tzdata package updated on Alpine stable to 2020d-r0 (https://github.com/librenms/docker/issues/143)
+  && apk --update --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main add \
+    tzdata \
+  && apk --update --no-cache add -t build-dependencies \
+    build-base \
+    make \
+    mariadb-dev \
+    musl-dev \
+    python3-dev \
   && pip3 install --upgrade pip \
-  && pip3 install python-memcached \
-  && sed -i -e "s/;date\.timezone.*/date\.timezone = UTC/" /etc/php7/php.ini \
+  && pip3 install python-memcached mysqlclient --upgrade \
+  && curl -sSL https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
+  && apk del build-dependencies \
   && rm -rf /var/cache/apk/* /var/www/* /tmp/* \
   && setcap cap_net_raw+ep /usr/bin/nmap \
   && setcap cap_net_raw+ep /usr/sbin/fping
 
-ENV LIBRENMS_VERSION="1.53.1" \
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS="2" \
+  LIBRENMS_VERSION="1.69" \
   LIBRENMS_PATH="/opt/librenms" \
-  DATA_PATH="/data" \
-  CRONTAB_PATH="/var/spool/cron/crontabs"
+  LIBRENMS_DOCKER="1" \
+  TZ="UTC" \
+  PUID="1000" \
+  PGID="1000"
 
-RUN mkdir -p /opt \
-  && addgroup -g 1000 librenms \
-  && adduser -u 1000 -G librenms -h ${LIBRENMS_PATH} -s /bin/sh -D librenms \
-  && passwd -l librenms \
-  && usermod -a -G librenms nginx \
-  && curl -sSL https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
-  && git clone --branch ${LIBRENMS_VERSION} https://github.com/librenms/librenms.git ${LIBRENMS_PATH} \
-  && chown -R librenms. ${LIBRENMS_PATH} \
-  && su - librenms -c "composer install --no-dev --no-interaction --no-ansi --working-dir=${LIBRENMS_PATH}" \
+RUN addgroup -g ${PGID} librenms \
+  && adduser -D -h /home/librenms -u ${PUID} -G librenms -s /bin/sh -D librenms \
   && curl -sSLk -q https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/distro -o /usr/bin/distro \
-  && chmod +x /usr/bin/distro \
-  && mkdir -p /data ${LIBRENMS_PATH}/config.d /var/log/supervisord \
-  && cp ${LIBRENMS_PATH}/config.php.default ${LIBRENMS_PATH}/config.php \
-  && cp ${LIBRENMS_PATH}/snmpd.conf.example /etc/snmp/snmpd.conf \
-  && sed -i "1s|.*|#!/usr/bin/env python3|" ${LIBRENMS_PATH}/snmp-scan.py \
-  && echo "foreach (glob(\"${DATA_PATH}/config/*.php\") as \$filename) include \$filename;" >> ${LIBRENMS_PATH}/config.php \
-  && echo "foreach (glob(\"${LIBRENMS_PATH}/config.d/*.php\") as \$filename) include \$filename;" >> ${LIBRENMS_PATH}/config.php \
-  && chown -R librenms. ${DATA_PATH} ${LIBRENMS_PATH} \
-  && chown -R nginx. /var/lib/nginx /var/log/nginx /var/log/php7 /var/tmp/nginx \
-  && rm -rf /tmp/*
+  && chmod +x /usr/bin/distro
 
-COPY entrypoint.sh /entrypoint.sh
-COPY assets /
-
-RUN chmod a+x /entrypoint.sh /usr/local/bin/*
-
-EXPOSE 80 514 514/udp
 WORKDIR ${LIBRENMS_PATH}
-VOLUME [ "${DATA_PATH}" ]
+RUN apk --update --no-cache add -t build-dependencies \
+    build-base \
+    linux-headers \
+    musl-dev \
+    python3-dev \
+  && git clone --branch ${LIBRENMS_VERSION} https://github.com/librenms/librenms.git . \
+  && pip3 install -r requirements.txt --upgrade \
+  && COMPOSER_CACHE_DIR="/tmp" composer install --no-dev --no-interaction --no-ansi \
+  && mkdir config.d \
+  && cp config.php.default config.php \
+  && cp snmpd.conf.example /etc/snmp/snmpd.conf \
+  && sed -i '/runningUser/d' lnms \
+  && echo "foreach (glob(\"/data/config/*.php\") as \$filename) include \$filename;" >> config.php \
+  && echo "foreach (glob(\"${LIBRENMS_PATH}/config.d/*.php\") as \$filename) include \$filename;" >> config.php \
+  && git clone https://github.com/librenms-plugins/Weathermap.git ./html/plugins/Weathermap \
+  && chown -R nobody.nogroup ${LIBRENMS_PATH} \
+  && apk del build-dependencies \
+  && rm -rf .git \
+    html/plugins/Test \
+    html/plugins/Weathermap/.git \
+    html/plugins/Weathermap/configs \
+    /tmp/* \
+    /var/cache/apk/*
 
-ENTRYPOINT [ "/entrypoint.sh" ]
-CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
+COPY rootfs /
+RUN chmod a+x /usr/local/bin/*
+
+EXPOSE 8000 514 514/udp
+VOLUME [ "/data" ]
+
+ENTRYPOINT [ "/init" ]

@@ -26,8 +26,9 @@ If you are interested, [check out](https://hub.docker.com/r/crazymax/) my other 
 * Multi-platform image
 * [Dispatcher service](doc/docker/environment-variables.md#dispatcher-service) as "sidecar" container
 * Syslog-ng support through a ["sidecar" container](doc/docker/environment-variables.md#syslog-ng)
+* Snmp-trap support through a ["sidecar" container](doc/docker/environment-variables.md#snmptrapd)
 * Built-in LibreNMS [Weathermap plugin](https://docs.librenms.org/Extensions/Weathermap/)
-* Ability to add custom Monitoring plugins (Nagios)
+* Ability to add custom Monitoring plugins
 * Ability to add custom alert templates
 * OPCache enabled to store precompiled script bytecode in shared memory
 * [s6-overlay](https://github.com/just-containers/s6-overlay/) as process supervisor
@@ -36,6 +37,19 @@ If you are interested, [check out](https://hub.docker.com/r/crazymax/) my other 
 * [RRDcached](https://github.com/crazy-max/docker-rrdcached) image ready to use for data caching and graphs
 * [msmtpd SMTP relay](https://github.com/crazy-max/docker-msmtpd) image to send emails
 * [MariaDB](https://github.com/docker-library/mariadb) image as database instance
+
+## Build locally
+
+```shell
+git clone https://github.com/librenms/docker.git docker-librenms
+cd docker-librenms
+
+# Build image and output to docker (default)
+docker buildx bake
+
+# Build multi-platform image
+docker buildx bake image-all
+```
 
 ## Multi-platform image
 
@@ -67,14 +81,17 @@ Image: librenms/librenms:latest
   * [LNMS command](doc/notes/lnms-command.md)
   * [Validate](doc/notes/validate.md)
   * [Dispatcher service](doc/notes/dispatcher-service.md)
+  * [Add a LibreNMS plugin](doc/notes/plugins.md)
   * [Syslog-ng](doc/notes/syslog-ng.md)
-  * [Additional Monitoring plugins (Nagios)](doc/notes/additional-monitoring-plugins.md)
+  * [Additional Monitoring plugins](doc/notes/additional-monitoring-plugins.md)
   * [Custom alert templates](doc/notes/alert-templates.md)
 * [Upgrade](doc/upgrade.md)
 
-## How can I help?
+## Contributing
 
-All kinds of contributions are welcome :raised_hands:! The most basic way to show your support is to star :star2: the project, or to raise issues :speech_balloon: You can also support this project by [**becoming a sponsor on GitHub**](https://github.com/sponsors/crazy-max) :clap: or by making a [Paypal donation](https://www.paypal.me/crazyws) to ensure this journey continues indefinitely! :rocket:
+Want to contribute? Awesome! The most basic way to show your support is to star the project, or to raise issues. You
+can also support this project by [**becoming a sponsor on GitHub**](https://github.com/sponsors/crazy-max) or by making
+a [Paypal donation](https://www.paypal.me/crazyws) to ensure this journey continues indefinitely!
 
 Thanks again for your support, it is much appreciated! :pray:
 

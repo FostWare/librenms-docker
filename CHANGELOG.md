@@ -1,5 +1,128 @@
 # Changelog
 
+## 21.12.1-r0 (2022/01/05)
+
+* LibreNMS 21.12.1 (#247)
+* Fix pip pkgs (#249)
+* nginx: increase fastcgi buffer size (#246)
+
+## 21.11.0-r0 (2021/11/14)
+
+* LibreNMS 21.11.0 (#242)
+
+## 21.10.2-r0 (2021/10/21)
+
+* LibreNMS 21.10.2 (#239)
+
+## 21.10.1-r0 (2021/10/19)
+
+* LibreNMS 21.10.1 (#236)
+
+## 21.10.0-r0 (2021/10/18)
+
+* LibreNMS 21.10.0 (#235)
+
+## 21.9.1-r0 (2021/09/28)
+
+* LibreNMS 21.9.1 (#230)
+
+## 21.9.0-r0 (2021/09/20)
+
+* LibreNMS 21.9.0 (#224)
+
+## 21.8.0-r0 (2021/09/01)
+
+* LibreNMS 21.8.0 (#222)
+* Alpine Linux 3.14 (#221)
+
+## 21.7.0-r2 (2021/08/10)
+
+* Misspelling of `SIDECAR_SNMPTRAPD` environment variable (#220)
+* Fix `librenms_snmptrapd` service typo (#219)
+
+## 21.7.0-r1 (2021/08/07)
+
+* Add SNMP config (#216)
+
+## 21.7.0-r0 (2021/08/01)
+
+* LibreNMS 21.7.0 (#215)
+* Create and enable a snmp trap handling container (#180)
+
+## 21.6.0-r0 (2021/06/28)
+
+* LibreNMS 21.6.0 (#210)
+
+## 21.5.1-r0 (2021/05/20)
+
+* LibreNMS 21.5.1 (#205)
+* Move to `docker/metadata-action` (#199)
+* Add `file` package (#195)
+
+## 21.4.0-r0 (2021/04/18)
+
+* LibreNMS 21.4.0 (#192)
+* Update db service example (#193)
+* Fix weathermap output perms (#191)
+* Fix warnings (#190)
+* All containers should connect to redis (#178)
+* alpine-s6 3.13-2.2.0.3 (#189)
+
+## 21.3.0-r0 (2021/03/21)
+
+* LibreNMS 21.3.0
+* Update syslog-ng max-connections (#179)
+
+## 21.2.0-r3 (2021/03/18)
+
+* Upstream Alpine update
+
+## 21.2.0-r2 (2021/03/10)
+
+* Handle LibreNMS plugins (#171)
+
+## 21.2.0-r1 (2021/03/04)
+
+* Switch to `yasu`
+
+## 21.2.0-r0 (2021/02/16)
+
+* LibreNMS 21.2.0 (#167)
+* `s6-overlay` 2.2.0.3 (#162)
+* Alpine Linux 3.13 (#162)
+
+## 21.1.0-r2 (2021/02/16)
+
+* Need to specify `rrdtool_version` (librenms/docker@ab027d7)
+
+## 21.1.0-r1 (2021/02/13)
+
+* Downgrade to `s6-overlay` 2.1.0.2 (#164)
+* No need to specify `rrdtool_version` (#166)
+
+## 21.1.0-r0 (2021/02/02)
+
+* LibreNMS 21.1.0
+* Switch to buildx bake
+* Do not fail on permission issue
+* Redis - Add scheme to allow TLS (#159)
+* Add iputils and fix perms (#131)
+
+## 1.70.1-RC2 (2020/12/10)
+
+* Fix Redis for dispatcher
+
+## 1.70.1-RC1 (2020/12/02)
+
+* LibreNMS 1.70.1
+* Add NET_ADMIN capability and fix fping6 (#140)
+
+## 1.69-RC3 (2020/11/22)
+
+* Fix tzdata issue with Alpine (#143)
+* Add alert templates (#142)
+* Add redis sentinel support (#141)
+
 ## 1.69-RC2 (2020/11/04)
 
 * Do not set default value for `RRDCACHED_SERVER`

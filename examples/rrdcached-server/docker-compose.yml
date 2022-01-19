@@ -2,14 +2,14 @@ version: "3.5"
 
 services:
   db:
-    image: mariadb:10.4
+    image: mariadb:10.5
     container_name: librenms_db
     command:
       - "mysqld"
       - "--innodb-file-per-table=1"
       - "--lower-case-table-names=0"
-      - "--character-set-server=utf8"
-      - "--collation-server=utf8_unicode_ci"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
     volumes:
       - "./db:/var/lib/mysql"
     environment:
@@ -62,6 +62,9 @@ services:
     image: librenms/librenms:latest
     container_name: librenms
     hostname: librenms
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     ports:
       - target: 8000
         published: 8000
@@ -84,12 +87,18 @@ services:
       - "DB_USER=${MYSQL_USER}"
       - "DB_PASSWORD=${MYSQL_PASSWORD}"
       - "DB_TIMEOUT=60"
+      - "REDIS_HOST=redis"
+      - "REDIS_PORT=6379"
+      - "REDIS_DB=0"
     restart: always
 
   dispatcher:
     image: librenms/librenms:latest
     container_name: librenms_dispatcher
     hostname: librenms-dispatcher
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     depends_on:
       - librenms
       - redis
@@ -117,6 +126,9 @@ services:
     image: librenms/librenms:latest
     container_name: librenms_syslogng
     hostname: librenms-syslogng
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     depends_on:
       - librenms
     ports:
@@ -139,5 +151,40 @@ services:
       - "DB_USER=${MYSQL_USER}"
       - "DB_PASSWORD=${MYSQL_PASSWORD}"
       - "DB_TIMEOUT=60"
+      - "REDIS_HOST=redis"
+      - "REDIS_PORT=6379"
+      - "REDIS_DB=0"
       - "SIDECAR_SYSLOGNG=1"
+    restart: always
+
+  snmptrapd:
+    image: librenms/librenms:latest
+    container_name: librenms_snmptrapd
+    hostname: librenms-snmptrapd
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      - librenms
+    ports:
+      - target: 162
+        published: 162
+        protocol: tcp
+      - target: 162
+        published: 162
+        protocol: udp
+    volumes:
+      - "./librenms:/data"
+    env_file:
+      - "./librenms.env"
+    environment:
+      - "TZ=${TZ}"
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "DB_HOST=db"
+      - "DB_NAME=${MYSQL_DATABASE}"
+      - "DB_USER=${MYSQL_USER}"
+      - "DB_PASSWORD=${MYSQL_PASSWORD}"
+      - "DB_TIMEOUT=60"
+      - "SIDECAR_SNMPTRAPD=1"
     restart: always

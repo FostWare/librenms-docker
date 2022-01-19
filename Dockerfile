@@ -1,11 +1,9 @@
-FROM --platform=${TARGETPLATFORM:-linux/amd64} crazymax/alpine-s6:3.12
+ARG LIBRENMS_VERSION="21.12.1"
 
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-RUN printf "I am running on ${BUILDPLATFORM:-linux/amd64}, building for ${TARGETPLATFORM:-linux/amd64}\n$(uname -a)\n"
+FROM crazymax/yasu:latest AS yasu
+FROM crazymax/alpine-s6:3.14-2.2.0.3
 
-LABEL maintainer="CrazyMax"
-
+COPY --from=yasu / /
 RUN apk --update --no-cache add \
     busybox-extras \
     acl \
@@ -15,11 +13,13 @@ RUN apk --update --no-cache add \
     ca-certificates \
     coreutils \
     curl \
+    file \
     fping \
     git \
     graphviz \
     imagemagick \
     ipmitool \
+    iputils \
     mariadb-client \
     monitoring-plugins \
     mtr \
@@ -62,14 +62,11 @@ RUN apk --update --no-cache add \
     rrdtool \
     runit \
     shadow \
-    su-exec \
-    syslog-ng=3.27.1-r0 \
+    syslog-ng=3.30.1-r1 \
     ttf-dejavu \
+    tzdata \
     util-linux \
     whois \
-  # FIXME: Remove when tzdata package updated on Alpine stable to 2020d-r0 (https://github.com/librenms/docker/issues/143)
-  && apk --update --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main add \
-    tzdata \
   && apk --update --no-cache add -t build-dependencies \
     build-base \
     make \
@@ -80,12 +77,20 @@ RUN apk --update --no-cache add \
   && pip3 install python-memcached mysqlclient --upgrade \
   && curl -sSL https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
   && apk del build-dependencies \
-  && rm -rf /var/cache/apk/* /var/www/* /tmp/* \
+  && rm -rf /var/www/* /tmp/* \
+  && echo "/usr/sbin/fping -6 \$@" > /usr/sbin/fping6 \
+  && chmod +x /usr/sbin/fping6 \
+  && chmod u+s,g+s \
+    /bin/ping \
+    /bin/ping6 \
+    /usr/lib/monitoring-plugins/check_icmp \
   && setcap cap_net_raw+ep /usr/bin/nmap \
-  && setcap cap_net_raw+ep /usr/sbin/fping
+  && setcap cap_net_raw+ep /usr/sbin/fping \
+  && setcap cap_net_raw+ep /usr/sbin/fping6 \
+  && setcap cap_net_raw+ep /usr/lib/monitoring-plugins/check_icmp \
+  && setcap cap_net_raw+ep /usr/lib/monitoring-plugins/check_ping
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS="2" \
-  LIBRENMS_VERSION="1.69" \
   LIBRENMS_PATH="/opt/librenms" \
   LIBRENMS_DOCKER="1" \
   TZ="UTC" \
@@ -98,13 +103,14 @@ RUN addgroup -g ${PGID} librenms \
   && chmod +x /usr/bin/distro
 
 WORKDIR ${LIBRENMS_PATH}
+ARG LIBRENMS_VERSION
 RUN apk --update --no-cache add -t build-dependencies \
     build-base \
     linux-headers \
     musl-dev \
     python3-dev \
   && git clone --branch ${LIBRENMS_VERSION} https://github.com/librenms/librenms.git . \
-  && pip3 install -r requirements.txt --upgrade \
+  && pip3 install --ignore-installed -r requirements.txt --upgrade \
   && COMPOSER_CACHE_DIR="/tmp" composer install --no-dev --no-interaction --no-ansi \
   && mkdir config.d \
   && cp config.php.default config.php \
@@ -119,13 +125,11 @@ RUN apk --update --no-cache add -t build-dependencies \
     html/plugins/Test \
     html/plugins/Weathermap/.git \
     html/plugins/Weathermap/configs \
-    /tmp/* \
-    /var/cache/apk/*
+    /tmp/*
 
 COPY rootfs /
-RUN chmod a+x /usr/local/bin/*
 
-EXPOSE 8000 514 514/udp
+EXPOSE 8000 514 514/udp 162 162/udp
 VOLUME [ "/data" ]
 
 ENTRYPOINT [ "/init" ]

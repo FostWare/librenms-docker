@@ -24,6 +24,7 @@
 * `REDIS_HOST`: Redis host for poller synchronization
 * `REDIS_SENTINEL`: Redis Sentinel host for high availability Redis cluster
 * `REDIS_SENTINEL_SERVICE`: Redis Sentinel service name (default `librenms`)
+* `REDIS_SCHEME`: Redis scheme (default `tcp`)
 * `REDIS_PORT`: Redis port (default `6379`)
 * `REDIS_PASSWORD`: Redis password
 * `REDIS_DB`: Redis database (default `0`)
@@ -33,6 +34,21 @@
 > :warning: Only used if you enable and run a [sidecar syslog-ng container](../notes/syslog-ng.md)
 
 * `SIDECAR_SYSLOGNG`: Set to `1` to enable sidecar syslog-ng mode for this container (default `0`)
+
+### Snmptrapd
+
+> :warning: Only used if you enable and run a [sidecar snmptrapd container](../notes/snmptrapd.md)
+
+* `SIDECAR_SNMPTRAPD`: Set to `1` to enable sidecar snmptrapd mode for this container (default `0`)
+* `SNMP_PROCESSING_TYPE`: Sets which type of processing (`log`, `execute`, and/or `net`) to use with the SNMP trap (default `log,execute,net`)
+* `SNMP_USER`: Defines what username to authenticate with (default `librenms_user`)
+* `SNMP_AUTH`: Defines what password to authenticate with (default `auth_pass` should not be used, but will work)
+* `SNMP_PRIV`: Defines what password to encrypt packages with (default `priv_pass` should not be used, but will work)
+* `SNMP_AUTH_PROTO`: Sets what protocol (`MD5`|`SHA`) to use for authentication (default `SHA`)
+* `SNMP_PRIV_PROTO`: Sets what protocol (`DES`|`AES`) to use for encryption of packages (default `AES`)
+* `SNMP_SECURITY_LEVEL`: Sets what security level (`noauth`|`priv`) to use (default `priv`)
+* `SNMP_ENGINEID`: Defines what SNMP EngineID to use (default `1234567890`)
+* `SNMP_DISABLE_AUTHORIZATION`: Will disable the above access control checks, and revert to the previous behaviour of accepting all incoming notifications. (default `yes`)
 
 ### Database
 

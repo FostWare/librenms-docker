@@ -1,8 +1,11 @@
-ARG LIBRENMS_VERSION="21.12.1"
+# syntax=docker/dockerfile:1
+
+ARG LIBRENMS_VERSION="23.5.0"
+ARG WEATHERMAP_PLUGIN_COMMIT="0b2ff643b65ee4948e4f74bb5cad5babdaddef27"
+ARG ALPINE_VERSION="3.17"
 
 FROM crazymax/yasu:latest AS yasu
-FROM crazymax/alpine-s6:3.14-2.2.0.3
-
+FROM crazymax/alpine-s6:${ALPINE_VERSION}-2.2.0.3
 COPY --from=yasu / /
 RUN apk --update --no-cache add \
     busybox-extras \
@@ -20,6 +23,7 @@ RUN apk --update --no-cache add \
     imagemagick \
     ipmitool \
     iputils \
+    libcap-utils \
     mariadb-client \
     monitoring-plugins \
     mtr \
@@ -28,41 +32,42 @@ RUN apk --update --no-cache add \
     nginx \
     nmap \
     openssl \
+    openssh-client \
     perl \
-    php7 \
-    php7-cli \
-    php7-ctype \
-    php7-curl \
-    php7-dom \
-    php7-fileinfo \
-    php7-fpm \
-    php7-gd \
-    php7-json \
-    php7-ldap \
-    php7-mbstring \
-    php7-mcrypt \
-    php7-memcached \
-    php7-mysqlnd \
-    php7-opcache \
-    php7-openssl \
-    php7-pdo \
-    php7-pdo_mysql \
-    php7-pear \
-    php7-phar \
-    php7-posix \
-    php7-session \
-    php7-simplexml \
-    php7-snmp \
-    php7-sockets \
-    php7-tokenizer \
-    php7-xml \
-    php7-zip \
+    php81 \
+    php81-cli \
+    php81-ctype \
+    php81-curl \
+    php81-dom \
+    php81-fileinfo \
+    php81-fpm \
+    php81-gd \
+    php81-gmp \
+    php81-json \
+    php81-ldap \
+    php81-mbstring \
+    php81-mysqlnd \
+    php81-opcache \
+    php81-openssl \
+    php81-pdo \
+    php81-pdo_mysql \
+    php81-pecl-memcached \
+    php81-pear \
+    php81-phar \
+    php81-posix \
+    php81-session \
+    php81-simplexml \
+    php81-snmp \
+    php81-sockets \
+    php81-tokenizer \
+    php81-xml \
+    php81-zip \
     python3 \
     py3-pip \
     rrdtool \
     runit \
     shadow \
-    syslog-ng=3.30.1-r1 \
+    syslog-ng=3.38.1-r0 \
     ttf-dejavu \
     tzdata \
     util-linux \
@@ -104,12 +109,14 @@ RUN addgroup -g ${PGID} librenms \
 
 WORKDIR ${LIBRENMS_PATH}
 ARG LIBRENMS_VERSION
+ARG WEATHERMAP_PLUGIN_COMMIT
 RUN apk --update --no-cache add -t build-dependencies \
     build-base \
     linux-headers \
     musl-dev \
     python3-dev \
-  && git clone --branch ${LIBRENMS_VERSION} https://github.com/librenms/librenms.git . \
+  && echo "Installing LibreNMS https://github.com/librenms/librenms.git#${LIBRENMS_VERSION}..." \
+  && git clone --depth=1 --branch ${LIBRENMS_VERSION} https://github.com/librenms/librenms.git . \
   && pip3 install --ignore-installed -r requirements.txt --upgrade \
   && COMPOSER_CACHE_DIR="/tmp" composer install --no-dev --no-interaction --no-ansi \
   && mkdir config.d \
@@ -118,13 +125,19 @@ RUN apk --update --no-cache add -t build-dependencies \
   && sed -i '/runningUser/d' lnms \
   && echo "foreach (glob(\"/data/config/*.php\") as \$filename) include \$filename;" >> config.php \
   && echo "foreach (glob(\"${LIBRENMS_PATH}/config.d/*.php\") as \$filename) include \$filename;" >> config.php \
-  && git clone https://github.com/librenms-plugins/Weathermap.git ./html/plugins/Weathermap \
-  && chown -R nobody.nogroup ${LIBRENMS_PATH} \
+  && ( \
+    git clone https://github.com/librenms-plugins/Weathermap.git ./html/plugins/Weathermap \
+    && cd ./html/plugins/Weathermap \
+    && git reset --hard $WEATHERMAP_PLUGIN_COMMIT \
+  ) \
+  && chown -R nobody:nogroup ${LIBRENMS_PATH} \
   && apk del build-dependencies \
   && rm -rf .git \
     html/plugins/Test \
     html/plugins/Weathermap/.git \
     html/plugins/Weathermap/configs \
+    doc/ \
+    tests/ \
     /tmp/*
 
 COPY rootfs /

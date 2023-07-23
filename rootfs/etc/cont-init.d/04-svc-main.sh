@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+set -e
 
 # From https://github.com/docker-library/mariadb/blob/master/docker-entrypoint.sh#L21-L41
 # usage: file_env VAR [DEFAULT]
@@ -17,7 +19,7 @@ file_env() {
   if [ "${!var:-}" ]; then
     val="${!var}"
   elif [ "${!fileVar:-}" ]; then
-    val="$(< "${!fileVar}")"
+    val="$(<"${!fileVar}")"
   fi
   export "$var"="$val"
   unset "$fileVar"
@@ -39,17 +41,17 @@ fi
 # Handle .env
 if [ ! -f "/data/.env" ]; then
   echo "Generating APP_KEY and unique NODE_ID"
-  cat > "/data/.env" <<EOL
+  cat >"/data/.env" <<EOL
 APP_KEY=$(artisan key:generate --no-interaction --force --show)
 NODE_ID=$(php -r "echo uniqid();")
 EOL
 fi
-cat "/data/.env" >> "${LIBRENMS_PATH}/.env"
-chown librenms. /data/.env "${LIBRENMS_PATH}/.env"
+cat "/data/.env" >>"${LIBRENMS_PATH}/.env"
+chown librenms:librenms /data/.env "${LIBRENMS_PATH}/.env"
 
 file_env 'DB_PASSWORD'
 if [ -z "$DB_PASSWORD" ]; then
-  >&2 echo "ERROR: Either DB_PASSWORD or DB_PASSWORD_FILE must be defined"
+  echo >&2 "ERROR: Either DB_PASSWORD or DB_PASSWORD_FILE must be defined"
   exit 1
 fi
 
@@ -58,16 +60,22 @@ unset DB_PASSWORD
 
 echo "Waiting ${DB_TIMEOUT}s for database to be ready..."
 counter=1
-while ! ${dbcmd} -e "show databases;" > /dev/null 2>&1; do
+while ! ${dbcmd} -e "show databases;" >/dev/null 2>&1; do
   sleep 1
   counter=$((counter + 1))
   if [ ${counter} -gt ${DB_TIMEOUT} ]; then
-    >&2 echo "ERROR: Failed to connect to database on $DB_HOST"
+    echo >&2 "ERROR: Failed to connect to database on $DB_HOST"
     exit 1
-  fi;
+  fi
 done
 echo "Database ready!"
+
+# Enable first run wizard if db is empty
 counttables=$(echo 'SHOW TABLES' | ${dbcmd} "$DB_NAME" | wc -l)
+if [ "${counttables}" -eq "0" ]; then
+  echo "Enabling First Run Wizard..."
+  echo "INSTALL=user,finish">> ${LIBRENMS_PATH}/.env
+fi
 
 echo "Updating database schema..."
 lnms migrate --force --no-ansi --no-interaction
@@ -77,13 +85,8 @@ echo "Clear cache"
 artisan cache:clear --no-interaction
 artisan config:cache --no-interaction
 
-if [ "${counttables}" -eq "0" ]; then
-  echo "Creating admin user..."
-  lnms user:add --password=librenms --email=librenms@librenms.docker --role=admin --no-ansi --no-interaction librenms
-fi
-
 mkdir -p /etc/services.d/nginx
-cat > /etc/services.d/nginx/run <<EOL
+cat >/etc/services.d/nginx/run <<EOL
 #!/usr/bin/execlineb -P
 with-contenv
 s6-setuidgid ${PUID}:${PGID}
@@ -92,16 +95,16 @@ EOL
 chmod +x /etc/services.d/nginx/run
 
 mkdir -p /etc/services.d/php-fpm
-cat > /etc/services.d/php-fpm/run <<EOL
+cat >/etc/services.d/php-fpm/run <<EOL
 #!/usr/bin/execlineb -P
 with-contenv
 s6-setuidgid ${PUID}:${PGID}
-php-fpm7 -F
+php-fpm81 -F
 EOL
 chmod +x /etc/services.d/php-fpm/run
 
 mkdir -p /etc/services.d/snmpd
-cat > /etc/services.d/snmpd/run <<EOL
+cat >/etc/services.d/snmpd/run <<EOL
 #!/usr/bin/execlineb -P
 with-contenv
 /usr/sbin/snmpd -f -c /etc/snmp/snmpd.conf

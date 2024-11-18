@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
 
-ARG LIBRENMS_VERSION="23.5.0"
+ARG LIBRENMS_VERSION="24.9.1"
 ARG WEATHERMAP_PLUGIN_COMMIT="0b2ff643b65ee4948e4f74bb5cad5babdaddef27"
-ARG ALPINE_VERSION="3.17"
+ARG ALPINE_VERSION="3.19"
+ARG SYSLOGNG_VERSION="4.5.0-r0"
 
 FROM crazymax/yasu:latest AS yasu
 FROM crazymax/alpine-s6:${ALPINE_VERSION}-2.2.0.3
@@ -34,52 +35,53 @@ RUN apk --update --no-cache add \
     openssl \
     openssh-client \
     perl \
-    php81 \
-    php81-cli \
-    php81-ctype \
-    php81-curl \
-    php81-dom \
-    php81-fileinfo \
-    php81-fpm \
-    php81-gd \
-    php81-gmp \
-    php81-json \
-    php81-ldap \
-    php81-mbstring \
-    php81-mysqlnd \
-    php81-opcache \
-    php81-openssl \
-    php81-pdo \
-    php81-pdo_mysql \
-    php81-pecl-memcached \
-    php81-pear \
-    php81-phar \
-    php81-posix \
-    php81-session \
-    php81-simplexml \
-    php81-snmp \
-    php81-sockets \
-    php81-tokenizer \
-    php81-xml \
-    php81-zip \
+    php83 \
+    php83-cli \
+    php83-ctype \
+    php83-curl \
+    php83-dom \
+    php83-fileinfo \
+    php83-fpm \
+    php83-gd \
+    php83-gmp \
+    php83-json \
+    php83-ldap \
+    php83-mbstring \
+    php83-mysqlnd \
+    php83-opcache \
+    php83-openssl \
+    php83-pdo \
+    php83-pdo_mysql \
+    php83-pecl-memcached \
+    php83-pear \
+    php83-phar \
+    php83-posix \
+    php83-session \
+    php83-simplexml \
+    php83-snmp \
+    php83-sockets \
+    php83-tokenizer \
+    php83-xml \
+    php83-zip \
     python3 \
     py3-pip \
     rrdtool \
     runit \
+    sed \
     shadow \
-    syslog-ng=3.38.1-r0 \
     ttf-dejavu \
     tzdata \
     util-linux \
     whois \
+  && ln -s /usr/bin/php83 /usr/bin/php \
   && apk --update --no-cache add -t build-dependencies \
     build-base \
     make \
     mariadb-dev \
     musl-dev \
     python3-dev \
-  && pip3 install --upgrade pip \
-  && pip3 install python-memcached mysqlclient --upgrade \
+  && pip3 install --upgrade --break-system-packages pip \
+  && pip3 install python-memcached mysqlclient --upgrade --break-system-packages \
   && curl -sSL https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
   && apk del build-dependencies \
   && rm -rf /var/www/* /tmp/* \
@@ -94,6 +96,9 @@ RUN apk --update --no-cache add \
   && setcap cap_net_raw+ep /usr/sbin/fping6 \
   && setcap cap_net_raw+ep /usr/lib/monitoring-plugins/check_icmp \
   && setcap cap_net_raw+ep /usr/lib/monitoring-plugins/check_ping
+
+ARG SYSLOGNG_VERSION
+RUN apk --update --no-cache add syslog-ng=${SYSLOGNG_VERSION}
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS="2" \
   LIBRENMS_PATH="/opt/librenms" \
@@ -117,7 +122,7 @@ RUN apk --update --no-cache add -t build-dependencies \
     python3-dev \
   && echo "Installing LibreNMS https://github.com/librenms/librenms.git#${LIBRENMS_VERSION}..." \
   && git clone --depth=1 --branch ${LIBRENMS_VERSION} https://github.com/librenms/librenms.git . \
-  && pip3 install --ignore-installed -r requirements.txt --upgrade \
+  && pip3 install --ignore-installed -r requirements.txt --upgrade --break-system-packages \
   && COMPOSER_CACHE_DIR="/tmp" composer install --no-dev --no-interaction --no-ansi \
   && mkdir config.d \
   && cp config.php.default config.php \

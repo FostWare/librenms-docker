@@ -36,7 +36,7 @@ services:
     restart: always
 
   db:
-    image: mariadb:10.5
+    image: mariadb:10
     container_name: librenms_db
     command:
       - "mysqld"
@@ -48,14 +48,14 @@ services:
       - "./db:/var/lib/mysql"
     environment:
       - "TZ=${TZ}"
-      - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+      - "MARIADB_RANDOM_ROOT_PASSWORD=yes"
       - "MYSQL_DATABASE=${MYSQL_DATABASE}"
       - "MYSQL_USER=${MYSQL_USER}"
       - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
     restart: always
 
   redis:
-    image: redis:5.0-alpine
+    image: redis:7.2-alpine
     container_name: librenms_redis
     environment:
       - "TZ=${TZ}"

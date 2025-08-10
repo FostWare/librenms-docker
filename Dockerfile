@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 
-ARG LIBRENMS_VERSION="24.9.1"
-ARG WEATHERMAP_PLUGIN_COMMIT="0b2ff643b65ee4948e4f74bb5cad5babdaddef27"
-ARG ALPINE_VERSION="3.19"
-ARG SYSLOGNG_VERSION="4.5.0-r0"
+# renovate: datasource=github-releases packageName=librenms/librenms versioning=semver
+ARG LIBRENMS_VERSION="25.7.0"
+ARG ALPINE_VERSION="3.22"
+ARG SYSLOGNG_VERSION="4.8.3-r1"
 
 FROM crazymax/yasu:latest AS yasu
 FROM crazymax/alpine-s6:${ALPINE_VERSION}-2.2.0.3
@@ -44,6 +44,7 @@ RUN apk --update --no-cache add \
     php83-fpm \
     php83-gd \
     php83-gmp \
+    php83-iconv \
     php83-json \
     php83-ldap \
     php83-mbstring \
@@ -73,7 +74,6 @@ RUN apk --update --no-cache add \
     tzdata \
     util-linux \
     whois \
-  && ln -s /usr/bin/php83 /usr/bin/php \
   && apk --update --no-cache add -t build-dependencies \
     build-base \
     make \
@@ -130,17 +130,10 @@ RUN apk --update --no-cache add -t build-dependencies \
   && sed -i '/runningUser/d' lnms \
   && echo "foreach (glob(\"/data/config/*.php\") as \$filename) include \$filename;" >> config.php \
   && echo "foreach (glob(\"${LIBRENMS_PATH}/config.d/*.php\") as \$filename) include \$filename;" >> config.php \
-  && ( \
-    git clone https://github.com/librenms-plugins/Weathermap.git ./html/plugins/Weathermap \
-    && cd ./html/plugins/Weathermap \
-    && git reset --hard $WEATHERMAP_PLUGIN_COMMIT \
-  ) \
   && chown -R nobody:nogroup ${LIBRENMS_PATH} \
   && apk del build-dependencies \
   && rm -rf .git \
     html/plugins/Test \
-    html/plugins/Weathermap/.git \
-    html/plugins/Weathermap/configs \
     doc/ \
     tests/ \
     /tmp/*
